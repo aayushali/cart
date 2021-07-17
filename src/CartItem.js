@@ -28,11 +28,13 @@ class CartItem extends React.Component {
 
     decreaseQuantity = () => {
         this.setState((prevState)=> {
-            if (prevState.qty > 1) {
+            if (prevState.qty === 1) {
+                return ;
+            }
                 return {
                     qty: prevState.qty - 1
                 }
-            }
+
         });
     }
     render(){
