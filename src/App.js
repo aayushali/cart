@@ -2,6 +2,7 @@ import React from 'react';
 import Cart from "./Cart";
 import Navbar from "./Navbar";
 import firebase from "firebase";
+
 class App extends React.Component {
     constructor() {
         super();
@@ -9,14 +10,37 @@ class App extends React.Component {
             products: [],
             loading: true
         }
+        this.db = firebase.firestore();
     }
 
-    componentDidMount(){
-       /* firebase
-            .firestore()
+    componentDidMount() {
+        /* firebase
+             .firestore()
+             .collection('products')
+             .get()
+             .then((snapshot)=>{
+                 console.log(snapshot);
+
+                 snapshot.docs.map((doc) => {
+
+                     console.log(doc.data());
+                 })
+
+                 const products = snapshot.docs.map((doc)=> {
+                     const data = doc.data();
+                     data['id'] = doc.id;
+                     return data;
+                 })
+
+                 this.setState({
+                     products,
+                     loading: false
+
+                 })
+             })*/
+        this.db
             .collection('products')
-            .get()
-            .then((snapshot)=>{
+            .onSnapshot((snapshot) => {
                 console.log(snapshot);
 
                 snapshot.docs.map((doc) => {
@@ -24,30 +48,7 @@ class App extends React.Component {
                     console.log(doc.data());
                 })
 
-                const products = snapshot.docs.map((doc)=> {
-                    const data = doc.data();
-                    data['id'] = doc.id;
-                    return data;
-                })
-
-                this.setState({
-                    products,
-                    loading: false
-
-                })
-            })*/
-        firebase
-            .firestore()
-            .collection('products')
-            .onSnapshot((snapshot)=>{
-                console.log(snapshot);
-
-                snapshot.docs.map((doc) => {
-
-                    console.log(doc.data());
-                })
-
-                const products = snapshot.docs.map((doc)=> {
+                const products = snapshot.docs.map((doc) => {
                     const data = doc.data();
                     data['id'] = doc.id;
                     return data;
@@ -105,24 +106,42 @@ class App extends React.Component {
 
         let cartTotal = 0;
         products.map((product) => {
-            if (product.qty > 0 ) {
-                cartTotal = cartTotal + product.qty * product.price ;
+            if (product.qty > 0) {
+                cartTotal = cartTotal + product.qty * product.price;
             }
             return '';
         })
         return cartTotal;
     }
 
+    addProduct = () => {
+        this.db
+            .collection('products')
+            .add({
+                img: '',
+                price: 900,
+                qty: 5,
+                title: 'washing Machine'
+            })
+
+            .then((docRef) => {
+                console.log('Product has been added ', docRef);
+            })
+            .catch((error) => {
+                console.log('Error :', error);
+            })
+    }
+
     render() {
-        const {products , loading } = this.state;
+        const {products, loading} = this.state;
         return (
             <div className="App">
                 <Navbar count={this.getCartCount()}/>
+                <button onClick={this.addProduct}>Add a product</button>
                 <Cart products={products} onIncreaseQuantity={this.handleIncreaseQuantity}
                       onDecreaseQuantity={this.handleDecreaseQuantity} onDelete={this.handleDelete}/>
                 {loading && <h1>Loading Products..</h1>}
-
-                <div style = {{padding: 10, fontSize: 20}}>TOTAL: {this.getCartTotal()}</div>
+                <div style={{padding: 10, fontSize: 20}}>TOTAL: {this.getCartTotal()}</div>
             </div>
         );
     }
